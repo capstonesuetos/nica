@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0A1B33">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="NICA">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>NICA · WiFi payment calculator</title>
+<style>
+:root{--navy:#0A1B33;--navy2:#12305A;--blue:#1D4E9E;--orange:#F28C28;--mist:#EEF3F9;--line:#DCE5F0;--ink:#0F2038;--muted:#62748C;--band:#E2ECFB;--serif:"Iowan Old Style","Palatino Linotype",Palatino,Georgia,serif}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:var(--mist);color:var(--ink);font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif;line-height:1.5;padding-bottom:calc(24px + env(safe-area-inset-bottom,0px))}
+button{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--orange);outline-offset:2px}
+[hidden]{display:none!important}
+
+/* Hero */
+.hero{position:relative;overflow:hidden;color:#fff;background:linear-gradient(160deg,var(--navy) 10%,var(--navy2) 65%,var(--blue));padding:calc(18px + env(safe-area-inset-top,0px)) 22px 64px;border-radius:0 0 32px 32px}
+.hero svg.arcs{position:absolute;right:-70px;top:-60px;width:340px;height:340px;opacity:.9;pointer-events:none}
+.hero>*:not(.arcs){position:relative}
+.brand{display:flex;align-items:center;gap:10px}
+.brand b{font-family:var(--serif);font-size:1.3rem;letter-spacing:.2em}
+.brand span{font-size:.8rem;color:#9FB4D3;border-left:1px solid #3B5784;padding-left:10px}
+.label{margin:34px 0 0;color:#B7C8E2;font-size:.9rem}
+.amount{font-family:var(--serif);font-size:clamp(3.2rem,15vw,4.6rem);line-height:1.05;margin:4px 0 14px;letter-spacing:-.01em}
+.amount .cur{font-size:.5em;vertical-align:.55em;margin-right:4px;color:#F7B26A}
+.amount .dec{font-size:.45em;color:#B7C8E2}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:6px 12px;border:1px solid #3B5784;border-radius:999px;background:rgba(255,255,255,.06);font-size:.85rem}
+.formula{margin:16px 0 0;color:#B7C8E2;font-size:.9rem;font-variant-numeric:tabular-nums}
+
+/* Layout */
+main{max-width:560px;margin:-36px auto 0;padding:0 16px;display:grid;gap:16px}
+@media(min-width:880px){main{max-width:980px;grid-template-columns:1fr 1fr;align-items:start}.wide{grid-column:1/-1}.hero{padding-left:max(22px,calc(50vw - 480px));padding-right:max(22px,calc(50vw - 480px))}}
+.card{position:relative;background:#fff;border:1px solid var(--line);border-radius:18px;padding:20px;box-shadow:0 12px 30px -14px rgba(10,27,51,.25)}
+.card-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:16px}
+h2{margin:0;font-family:var(--serif);font-size:1.2rem;font-weight:700}
+.hint{margin:2px 0 0;color:var(--muted);font-size:.85rem}
+
+/* Buttons and inputs */
+.btn{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 18px;border-radius:12px;border:1px solid transparent;font-weight:600;cursor:pointer}
+.btn-primary{background:var(--navy);color:#fff}
+.btn-ghost{background:#fff;border-color:#C4D1E3}
+.btn-sm{min-height:36px;padding:6px 14px;font-size:.85rem;border-radius:10px}
+.input-group{display:flex;min-height:46px;border:1px solid #C4D1E3;border-radius:12px;background:#fff;overflow:hidden}
+.input-group:focus-within{border-color:var(--blue);box-shadow:0 0 0 3px var(--band)}
+.affix{display:flex;align-items:center;padding:0 12px;background:var(--mist);color:var(--muted);font-size:.9rem}
+.input-group input{flex:1;min-width:0;border:0;padding:10px 12px;font:inherit;font-size:1rem;background:transparent;color:var(--ink)}
+.input-group input:focus{outline:none}
+
+/* Plans */
+.plans{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.plan{display:flex;flex-direction:column;align-items:flex-start;gap:2px;padding:14px;border:1px solid #C4D1E3;border-radius:14px;background:#fff;cursor:pointer;text-align:left;transition:background .15s,border-color .15s}
+.plan .speed{font-family:var(--serif);font-size:1.7rem;font-weight:700;line-height:1.1}
+.plan .speed small{font-family:inherit;font-size:.75rem;font-weight:400;color:var(--muted);font-family:"Segoe UI",system-ui,sans-serif;margin-left:3px}
+.plan .cost{font-size:.85rem;color:var(--muted)}
+.plan[aria-checked=true]{background:var(--navy);border-color:var(--navy);color:#fff}
+.plan[aria-checked=true] small{color:#9FB4D3}
+.plan[aria-checked=true] .cost{color:#F7B26A;font-weight:600}
+.switch{display:flex;align-items:center;gap:12px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line);cursor:pointer;font-size:.92rem}
+.switch input{position:absolute;opacity:0}
+.track{flex:none;width:44px;height:26px;border-radius:13px;background:#B9C7DA;position:relative;transition:background .15s}
+.track::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:transform .15s}
+.switch input:checked+.track{background:var(--blue)}
+.switch input:checked+.track::after{transform:translateX(18px)}
+.switch input:focus-visible+.track{outline:3px solid var(--orange);outline-offset:2px}
+
+/* Edit */
+.edit-grid{display:grid;grid-template-columns:1fr 1fr 52px;gap:8px;align-items:center}
+.col{font-size:.78rem;font-weight:600;color:var(--muted)}.col.c{text-align:center}
+.remove{display:flex;justify-content:center}.remove input{width:22px;height:22px;accent-color:#C93C2E}
+.new-label{grid-column:1/-1;margin-top:8px;font-size:.78rem;font-weight:600;color:var(--muted)}
+.edit-actions{display:flex;gap:10px;margin-top:18px;padding-top:16px;border-top:1px solid var(--line)}.edit-actions .btn{flex:1}
+.msg{padding:10px 14px;border-radius:12px;margin-bottom:12px;font-size:.9rem}
+.msg.ok{background:#E5F6EC}.msg.err{background:#FDECEB}
+
+/* Calendar */
+.cal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px}
+.cal-head strong{font-family:var(--serif);font-size:1.05rem}
+.nav{width:44px;height:44px;border:1px solid #C4D1E3;border-radius:12px;background:#fff;font-weight:700;cursor:pointer}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;text-align:center}
+.dow{font-size:.75rem;color:var(--muted);padding:4px 0}
+.day{height:44px;border:1px solid transparent;border-radius:12px;background:transparent;cursor:pointer;font-variant-numeric:tabular-nums}
+.day.billed{background:var(--band)}
+.day.today{border-color:var(--blue)}
+.day.sel{background:var(--orange);color:var(--navy);font-weight:700}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-top:14px;font-size:.8rem;color:var(--muted)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:4px;margin-right:6px;vertical-align:-1px}
+
+/* Breakdown */
+.rows{margin:0;padding:0;list-style:none}
+.rows li{display:flex;justify-content:space-between;gap:12px;padding:11px 0;border-top:1px solid var(--line)}
+.rows li:first-child{border-top:0}
+.rows span{color:var(--muted)}.rows b{text-align:right;font-variant-numeric:tabular-nums}
+.rows li.total{border-top:2px solid var(--navy);margin-top:4px}.rows li.total span{color:var(--ink);font-weight:600}
+.rows li.total b{font-family:var(--serif);font-size:1.3rem}
+
+/* Install bar */
+.install{display:flex;align-items:center;gap:12px;background:var(--navy);color:#fff;border:0;padding:14px 18px}
+.install p{margin:0;flex:1;font-size:.9rem}
+.install .btn{background:var(--orange);color:var(--navy)}
+.close{background:none;border:0;color:#9FB4D3;padding:8px;cursor:pointer}
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+(function(){'use strict';
+var DAYS=30,DEF={50:1000,55:1100,60:1200,65:1300,75:1500,150:2500},KEY='nica_plans';
+function load(){try{var d=JSON.parse(localStorage.getItem(KEY));if(d&&Object.keys(d).length)return d}catch(e){}return Object.assign({},DEF)}
+function save(p){try{localStorage.setItem(KEY,JSON.stringify(p));return true}catch(e){return false}}
+var fm=new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP'});
+function peso(n){return fm.format(n)}
+function short(n){return peso(n).replace(/\.00$/,'')}
+function plain(n){return String(Math.round(n*100)/100)}
+function ds(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+function same(a,b){return a.getTime()===b.getTime()}
+function fmt(d,o){return d.toLocaleDateString('en-PH',o)}
+function keys(p){return Object.keys(p).map(Number).sort(function(a,b){return a-b})}
+
+var plans=load(),today=ds(new Date());
+var S={plan:plans[50]!==undefined?50:keys(plans)[0],inc:true,date:today,view:new Date(today.getFullYear(),today.getMonth(),1),edit:false,msg:'',err:'',showInstall:true};
+var prompt_=null,ios=/iphone|ipad|ipod/i.test(navigator.userAgent),standalone=matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+
+function compute(){var price=plans[S.plan],d=S.date,dim=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+var days=Math.max(0,Math.min(dim,dim-d.getDate()+(S.inc?1:0))),daily=price/dim;
+return{price:price,dim:dim,days:days,daily:daily,total:daily*days,end:new Date(d.getFullYear(),d.getMonth()+1,0)}}
+
+function hero(b){var t=b.total.toFixed(2).split('.'),whole=Number(t[0]).toLocaleString('en-PH');
+var range=b.days>0?fmt(new Date(S.date.getFullYear(),S.date.getMonth(),S.date.getDate()+(S.inc?0:1)),{month:'short',day:'numeric'})+' – '+fmt(b.end,{month:'short',day:'numeric'}):'No billed days';
+return '<header class="hero"><svg class="arcs" viewBox="0 0 340 340" fill="none" stroke-linecap="round" aria-hidden="true">'+
+'<circle cx="260" cy="80" r="150" stroke="#2EC4D6" stroke-opacity=".10" stroke-width="2"/><circle cx="260" cy="80" r="110" stroke="#2EC4D6" stroke-opacity=".16" stroke-width="2"/>'+
+'<circle cx="260" cy="80" r="70" stroke="#2EC4D6" stroke-opacity=".26" stroke-width="2"/><circle cx="260" cy="80" r="32" stroke="#F28C28" stroke-opacity=".6" stroke-width="3"/></svg>'+
+'<div class="brand"><b>NICA</b><span>WiFi payment</span></div>'+
+'<p class="label">Amount to pay for '+fmt(S.date,{month:'long',year:'numeric'})+'</p>'+
+'<div class="amount" aria-live="polite"><span class="cur">&#8369;</span>'+whole+'<span class="dec">.'+t[1]+'</span></div>'+
+'<div class="chips"><span class="chip">'+b.days+' day'+(b.days===1?'':'s')+'</span><span class="chip">'+range+'</span><span class="chip">'+S.plan+' Mbps</span></div>'+
+'</header>'}
+
+function install(){if(standalone||!S.showInstall)return'';
+if(prompt_)return'<section class="card install wide"><p>Install NICA on your phone to use it offline.</p><button class="btn btn-sm" data-act="install">Install</button><button class="close" data-act="hide" aria-label="Dismiss">&#x2715;</button></section>';
+if(ios)return'<section class="card install wide"><p>To install: tap <b>Share</b>, then <b>Add to Home Screen</b>.</p><button class="close" data-act="hide" aria-label="Dismiss">&#x2715;</button></section>';return''}
+
+function planCard(){var h='<section class="card"><div class="card-head"><div><h2>WiFi plan</h2><p class="hint">Choose what the customer applied for.</p></div><button class="btn btn-ghost btn-sm" data-act="edit">Edit plans</button></div>';
+if(S.msg)h+='<div class="msg ok" role="status">'+S.msg+'</div>';
+h+='<div class="plans" role="radiogroup" aria-label="WiFi plan">';
+keys(plans).forEach(function(k){h+='<button class="plan" role="radio" aria-checked="'+(k===S.plan)+'" data-plan="'+k+'"><span class="speed">'+k+'<small>Mbps</small></span><span class="cost">'+short(plans[k])+' / month</span></button>'});
+return h+'</div><label class="switch"><input type="checkbox" data-act="inc"'+(S.inc?' checked':'')+'><span class="track"></span><span>Count the installation day as a billed day</span></label></section>'}
+
+function row(m,p,isNew){return'<div class="input-group"><input type="number" inputmode="numeric" min="1" step="1" data-f="mbps" value="'+m+'"'+(isNew?' placeholder="e.g. 100"':'')+' aria-label="Speed in Mbps"><span class="affix">Mbps</span></div>'+
+'<div class="input-group"><span class="affix">&#8369;</span><input type="number" inputmode="decimal" min="1" step="0.01" data-f="price" value="'+p+'"'+(isNew?' placeholder="e.g. 1800"':'')+' aria-label="Monthly price in pesos"></div>'+
+(isNew?'<div></div>':'<div class="remove"><input type="checkbox" data-f="remove" aria-label="Remove '+m+' Mbps plan"></div>')}
+
+function editCard(){var h='<section class="card"><div class="card-head"><div><h2>Edit plans and prices</h2><p class="hint">Saved on this phone.</p></div></div>';
+if(S.err)h+='<div class="msg err" role="alert">'+S.err+'</div>';
+h+='<form id="ef" novalidate><div class="edit-grid"><div class="col">Speed</div><div class="col">Monthly price</div><div class="col c">Remove</div>';
+keys(plans).forEach(function(k){h+=row(k,plans[k],false)});
+return h+'<div class="new-label">Add a new plan</div>'+row('','',true)+'</div><div class="edit-actions"><button type="button" class="btn btn-ghost" data-act="cancel">Cancel</button><button type="submit" class="btn btn-primary">Save plans</button></div></form></section>'}
+
+function calCard(b){var v=S.view,y=v.getFullYear(),m=v.getMonth(),dim=new Date(y,m+1,0).getDate(),sd=new Date(y,m,1).getDay(),sel=S.date;
+var h='<section class="card"><div class="card-head"><div><h2>Installation date</h2><p class="hint">Tap the day the WiFi was installed.</p></div></div><div class="cal-head"><button class="nav" data-nav="-1" aria-label="Previous month">&lsaquo;</button><strong>'+fmt(v,{month:'long',year:'numeric'})+'</strong><button class="nav" data-nav="1" aria-label="Next month">&rsaquo;</button></div><div class="grid">';
+['Su','Mo','Tu','We','Th','Fr','Sa'].forEach(function(d){h+='<div class="dow">'+d+'</div>'});
+for(var i=0;i<sd;i++)h+='<div></div>';
+for(var d=1;d<=dim;d++){var dt=new Date(y,m,d),isSel=same(dt,sel),inM=sel.getFullYear()===y&&sel.getMonth()===m,billed=inM&&!isSel&&b.days>0&&d>=sel.getDate()+(S.inc?0:1);
+h+='<button class="day'+(isSel?' sel':'')+(billed?' billed':'')+(same(dt,today)?' today':'')+'" data-date="'+y+'-'+m+'-'+d+'"'+(isSel?' aria-pressed="true"':'')+'>'+d+'</button>'}
+return h+'</div><div class="legend"><span><i style="background:var(--orange)"></i>Installation</span><span><i style="background:var(--band)"></i>Billed days</span><span><i style="border:1px solid var(--blue)"></i>Today</span></div></section>'}
+
+function breakdown(b){return'<section class="card wide"><div class="card-head"><div><h2>Breakdown</h2></div></div><ul class="rows">'+
+'<li><span>Plan</span><b>'+S.plan+' Mbps</b></li><li><span>Monthly price</span><b>'+peso(b.price)+'</b></li>'+
+'<li><span>Installation date</span><b>'+fmt(S.date,{month:'long',day:'numeric',year:'numeric'})+'</b></li>'+
+'<li><span>Last day of the month</span><b>'+fmt(b.end,{month:'long',day:'numeric',year:'numeric'})+'</b></li>'+
+'<li><span>Price per day ('+peso(b.price)+' &divide; '+b.dim+')</span><b>'+peso(b.daily)+'</b></li><li><span>Days to pay</span><b>'+b.days+'</b></li>'+
+'<li class="total"><span>Total</span><b>'+peso(b.total)+'</b></li></ul></section>'}
+
+var app=document.getElementById('app');
+function render(){var b=compute();app.innerHTML=hero(b)+'<main>'+install()+(S.edit?editCard():planCard())+calCard(b)+breakdown(b)+'</main>'}
+
+app.addEventListener('click',function(e){var t=e.target.closest('[data-plan],[data-date],[data-nav],[data-act]');if(!t)return;
+if(t.dataset.plan){S.plan=+t.dataset.plan;S.msg='';return render()}
+if(t.dataset.date){var p=t.dataset.date.split('-').map(Number);S.date=new Date(p[0],p[1],p[2]);return render()}
+if(t.dataset.nav){S.view=new Date(S.view.getFullYear(),S.view.getMonth()+ +t.dataset.nav,1);return render()}
+var a=t.dataset.act;
+if(a==='edit'){S.edit=true;S.err='';S.msg='';render()}
+else if(a==='cancel'){S.edit=false;S.err='';render()}
+else if(a==='hide'){S.showInstall=false;render()}
+else if(a==='install'&&prompt_){prompt_.prompt();prompt_.userChoice.then(function(){prompt_=null;render()})}});
+
+app.addEventListener('change',function(e){if(e.target.dataset.act==='inc'){S.inc=e.target.checked;render()}});
+
+app.addEventListener('submit',function(e){if(e.target.id!=='ef')return;e.preventDefault();
+var rows=[],cur;e.target.querySelectorAll('[data-f]').forEach(function(el){var f=el.dataset.f;
+if(f==='mbps'){cur={m:+el.value,p:0,r:false};rows.push(cur)}else if(f==='price')cur.p=Math.round(+el.value*100)/100;else cur.r=el.checked});
+var n={};rows.forEach(function(r){if(r.m>0&&r.p>0&&!r.r)n[Math.round(r.m)]=r.p});
+if(!Object.keys(n).length){S.err='Keep at least one plan.';return render()}
+if(!save(n)){S.err='Could not save on this phone. Check that storage is allowed.';return render()}
+plans=n;if(plans[S.plan]===undefined)S.plan=keys(plans)[0];S.edit=false;S.err='';S.msg='Plans saved.';render()});
+
+addEventListener('beforeinstallprompt',function(e){e.preventDefault();prompt_=e;render()});
+addEventListener('appinstalled',function(){prompt_=null;standalone=true;render()});
+if('serviceWorker' in navigator&&location.protocol!=='file:')addEventListener('load',function(){navigator.serviceWorker.register('sw.js').catch(function(){})});
+render();
+})();
+</script>
+</body>
+</html>
